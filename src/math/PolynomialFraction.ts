@@ -16,7 +16,7 @@ class PolynomialFraction {
      * @param denominator The denominator of this polynomial fraction.
      */
     constructor(
-        numerator: Polynomial,
+        numerator: Polynomial = new Polynomial([0]),
         denominator: Polynomial = new Polynomial([1])
     ) {
         this.numerator = numerator;

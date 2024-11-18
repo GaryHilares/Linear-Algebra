@@ -9,7 +9,7 @@ class Polynomial {
      *              coefficient for x^0 and ending with the coefficient for
      *              x^n.
      */
-    constructor(coefs: number[]) {
+    constructor(coefs: number[] = [0]) {
         this.coefs = coefs;
     }
 
@@ -48,12 +48,12 @@ class Polynomial {
         const new_coefs = Array<number>(max_length);
         for (let i = 0; i < max_length; i++) {
             const op1 = this.coefs.length > i ? this.coefs[i] : 0;
-            const op2 = this.coefs.length > i ? this.coefs[i] : 0;
+            const op2 = addend.coefs.length > i ? addend.coefs[i] : 0;
             new_coefs[i] = op1 + op2;
         }
-        for (let i = this.coefs.length - 1; i >= 1; i--) {
-            if (this.coefs[i] == 0) {
-                this.coefs.pop();
+        for (let i = new_coefs.length - 1; i >= 1; i--) {
+            if (new_coefs[i] == 0) {
+                new_coefs.pop();
             } else {
                 break;
             }
@@ -135,10 +135,12 @@ class Polynomial {
      * Computes the common factor of the terms of this polynomial.
      * @returns An array of length two. The first element is the GCD of the
      *          coefficients of this polynomial. The second element is the
-     *          biggest power that is a common factor of all monomials.
+     *          biggest power that is a common factor of all monomials. If the
+     *          polynomial is 0, this function will produce that the biggest
+     *          power that is a common factor is 0.
      */
     commonFactor(): [number, number] {
-        let smallest_power = Infinity;
+        let smallest_power = 0;
         for (let i = 0; i < this.coefs.length; i++) {
             if (this.coefs[i] != 0) {
                 smallest_power = i;
@@ -175,7 +177,7 @@ class Polynomial {
      */
     divideByPower(divisorPower: number): Polynomial {
         let new_coefs = Array<number>(this.coefs.length - divisorPower);
-        for (let i = 0; i < this.coefs.length; i++) {
+        for (let i = 0; i < new_coefs.length; i++) {
             new_coefs[i] = this.coefs[i + divisorPower];
         }
         return new Polynomial(new_coefs);
