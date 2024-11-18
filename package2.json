@@ -1,0 +1,18 @@
+{
+    "name": "linearalgebra",
+    "version": "1.0.0",
+    "description": "Linear algebra library made for fun.",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest"
+    },
+    "keywords": ["mathematics", "algorithms"],
+    "author": "Gary Hilares",
+    "license": "CC-BY-4.0",
+    "devDependencies": {
+        "@jest/globals": "^29.7.0",
+        "@types/jest": "^29.5.14",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.2.5"
+    }
+}
