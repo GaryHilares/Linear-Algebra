@@ -1,0 +1,3 @@
+class DivisionByZero {}
+
+export { DivisionByZero };

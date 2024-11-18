@@ -1,5 +1,4 @@
 import { Matrix } from "./math/Matrix";
-// import { Rational } from "./rational";
 import { Polynomial, PolynomialFraction } from "./math/PolynomialFraction";
 
 function main(): void {
