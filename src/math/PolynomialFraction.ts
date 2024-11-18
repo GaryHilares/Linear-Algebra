@@ -14,19 +14,14 @@ class PolynomialFraction {
      * denominator.
      * @param numerator The numerator of this polynomial fraction.
      * @param denominator The denominator of this polynomial fraction.
-     * @param simplify True if this polynomial fraction should be simplified,
-     *                 false otherwise.
      */
     constructor(
         numerator: Polynomial,
-        denominator: Polynomial = new Polynomial([1]),
-        simplify = true
+        denominator: Polynomial = new Polynomial([1])
     ) {
         this.numerator = numerator;
         this.denominator = denominator;
-        if (simplify) {
-            this.simplify();
-        }
+        this.simplify();
     }
 
     /**

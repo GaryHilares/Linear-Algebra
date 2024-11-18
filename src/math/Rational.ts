@@ -12,14 +12,9 @@ class Rational {
      * Creates a new rational number with the given numerator and denominator.
      * @param numerator Integer representing numerator of the given integer.
      * @param denominator Integer representing denominator of the given integer.
-     * @param simplify True if rational should be simplified, false otherwise.
      * @throw DivisionByZero if denominator is zero.
      */
-    constructor(
-        numerator: number = 0,
-        denominator: number = 1,
-        simplify: boolean = true
-    ) {
+    constructor(numerator: number = 0, denominator: number = 1) {
         if (denominator == 0) {
             throw new DivisionByZero();
         }
@@ -29,9 +24,7 @@ class Rational {
         }
         this.numerator = numerator;
         this.denominator = denominator;
-        if (simplify) {
-            this.simplify();
-        }
+        this.simplify();
     }
 
     /**

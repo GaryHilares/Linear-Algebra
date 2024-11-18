@@ -20,9 +20,8 @@ describe("Tests for rational module", () => {
             expect(new Rational(2, 3).toNumber()).toBeCloseTo(0.6667);
             expect(new Rational(7, 5).toNumber()).toBeCloseTo(1.4);
         });
-        test("Rational constructor should simplify based on simplify argument", () => {
+        test("Rational constructor should simplify", () => {
             expect(new Rational(2, 4).toString()).toEqual("1/2");
-            expect(new Rational(2, 4, false).toString()).toEqual("2/4");
             expect(new Rational(0, 2).toString()).toEqual("0");
         });
         test("Rational constructor should reject 0 as denominator", () => {
