@@ -3,7 +3,7 @@ import { Rational } from "../../src/math/Rational";
 import { Matrix } from "../../src/math/Matrix";
 
 describe("Matrix module", () => {
-    test("1x1 matrix correctly reduced to RREF", () => {
+    test("1x1 matrix should be correctly reduced to RREF", () => {
         expect(
             new Matrix(1, 1, [new Rational()]).rref().get(0, 0).equalsZero()
         ).toBeTruthy();
