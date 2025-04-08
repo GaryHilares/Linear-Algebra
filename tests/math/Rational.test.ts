@@ -1,5 +1,5 @@
 import { describe, test, expect } from "@jest/globals";
-import { Rational, DivisionByZero } from "../../src/math/Rational";
+import { Rational, DivisionByZero } from "../../src/model/Rational";
 
 describe("Tests for rational module", () => {
     const zero = new Rational();
@@ -28,6 +28,9 @@ describe("Tests for rational module", () => {
             expect(() => new Rational(0, 0)).toThrow(DivisionByZero);
             expect(() => new Rational(1, 0)).toThrow(DivisionByZero);
             expect(() => new Rational(53, 0)).toThrow(DivisionByZero);
+        });
+        test("Should correctly handle negative sign on denominator", () => {
+            expect(new Rational(-1, -1).toString()).toBe("1");
         });
     });
     describe("Test multiply method", () => {
@@ -81,5 +84,43 @@ describe("Tests for rational module", () => {
             expect(threeHalves.add(twoThirds).toNumber()).toBeCloseTo(13 / 6);
         });
     });
-    // TODO: Add more tests.
+    describe("Test subtract method", () => {
+        test("Subtract zero from rational", () => {
+            expect(threeHalves.subtract(zero).toNumber()).toBeCloseTo(3 / 2);
+        });
+        test("Subtract one from rational", () => {
+            expect(threeHalves.subtract(one).toNumber()).toBeCloseTo(1 / 2);
+        });
+        test("Subtract two rationaals with positive result", () => {
+            expect(threeHalves.subtract(twoThirds).toNumber()).toBeCloseTo(
+                5 / 6
+            );
+        });
+        test("Subtract two rationals with negative result", () => {
+            expect(twoThirds.subtract(threeHalves).toNumber()).toBeCloseTo(
+                -5 / 6
+            );
+        });
+    });
+    describe("Test division", () => {
+        test("Division of zero by zero should cause error", () => {
+            expect(() => zero.divide(zero)).toThrow(DivisionByZero);
+        });
+        test("Division by zero should cause error", () => {
+            expect(() => twoThirds.divide(zero)).toThrow(DivisionByZero);
+        });
+        test("Division by non-zero self should return 1", () => {
+            expect(twoThirds.divide(twoThirds).toNumber()).toBe(1);
+        });
+    });
+    describe("Test multiplicative inverse", () => {
+        test("Multiplicative inverse should produce correct result on non-zero rationals", () => {
+            expect(twoThirds.multiplicativeInverse().toNumber()).toBeCloseTo(
+                3 / 2
+            );
+        });
+        test("Multiplicative inverse should throw error on zero", () => {
+            expect(() => zero.multiplicativeInverse()).toThrow(DivisionByZero);
+        });
+    });
 });

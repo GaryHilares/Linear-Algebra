@@ -8,6 +8,44 @@ interface NumberInterface<NumberType> {
     toString: () => string;
 }
 
+class SwapStepInfo {
+    public constructor(private row1: number, private row2: number) {}
+
+    public toString(): string {
+        return `Swapped row ${this.row1} with ${this.row2}`;
+    }
+}
+
+class ReplaceStepInfo<NumberType extends NumberInterface<NumberType>> {
+    public constructor(
+        private srcRow: number,
+        private dstRow: number,
+        private factor: NumberType
+    ) {}
+
+    public toString(): string {
+        return `Replaced row ${this.srcRow} times ${this.factor} into row ${this.dstRow}`;
+    }
+}
+
+class ScaleStepInfo<NumberType extends NumberInterface<NumberType>> {
+    public constructor(private row: number, private factor: NumberType) {}
+
+    public toString(): string {
+        return `Scaled row ${this.row} by ${this.factor.toString()}`;
+    }
+}
+
+type StepInfo<NumberType extends NumberInterface<NumberType>> =
+    | SwapStepInfo
+    | ReplaceStepInfo<NumberType>
+    | ScaleStepInfo<NumberType>;
+
+interface Step<NumberType extends NumberInterface<NumberType>> {
+    info: StepInfo<NumberType>;
+    result: Matrix<NumberType>;
+}
+
 class OutOfBondsAccess {}
 
 /**
@@ -16,15 +54,19 @@ class OutOfBondsAccess {}
 class Matrix<NumberType extends NumberInterface<NumberType>> {
     private m: number;
     private n: number;
-    private entries: NumberType[];
+    private entries: Array<Array<NumberType>>;
 
     /**
      * Constructs a new mxn matrix.
      * @param m Integer representing amount of rows in matrix.
      * @param n Integer representing amount of columns in matrix.
-     * @param entries Number representing the entries of the matrix.
+     * @param entries Numbers representing the entries of the matrix.
      */
-    constructor(m: number, n: number, entries: NumberType[]) {
+    public constructor(
+        m: number,
+        n: number,
+        entries: Array<Array<NumberType>>
+    ) {
         this.m = m;
         this.n = n;
         this.entries = entries;
@@ -34,9 +76,20 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
      * Converts this matrix into its own reduced row echelon form.
      * @returns this is returned for method chaining.
      */
-    rref(): Matrix<NumberType> {
-        for (let step of this.rref_steps());
-        return this;
+    public computeRref(): Matrix<NumberType> {
+        let ret = this as Matrix<NumberType>;
+        for (let step of this.generateRrefSteps()) {
+            ret = step.result;
+        }
+        return ret;
+    }
+
+    public copy(): Matrix<NumberType> {
+        return new Matrix<NumberType>(
+            this.m,
+            this.n,
+            this.entries.map((row) => row.slice())
+        );
     }
 
     /**
@@ -44,13 +97,14 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
      * @returns Generator to matrix's RREF steps. Note that each call to next()
      *          in the iterator modifies the current matrix to its next RREF form.
      */
-    *rref_steps(): Generator<Matrix<NumberType>, void, unknown> {
+    public *generateRrefSteps(): Generator<Step<NumberType>, void, unknown> {
         let pivot_col = 0;
         let pivot_row = 0;
+        const copy = this.copy();
         while (pivot_row < this.m && pivot_col < this.n) {
             let non_zero_row = -1; // -1 is sentinel for inexistence
             for (let row = pivot_row; row < this.m; row++) {
-                if (!this.get(row, pivot_col).equalsZero()) {
+                if (!copy.get(row, pivot_col).equalsZero()) {
                     non_zero_row = row;
                     break;
                 }
@@ -60,20 +114,29 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
                 continue;
             } else {
                 if (non_zero_row != pivot_row) {
-                    yield this.swapRows(pivot_row, non_zero_row);
+                    yield {
+                        result: copy.swapRows(pivot_row, non_zero_row).copy(),
+                        info: new SwapStepInfo(pivot_row, non_zero_row),
+                    };
                 }
             }
-            const pivot = this.get(pivot_row, pivot_col);
+            const pivot = copy.get(pivot_row, pivot_col);
             let scale = pivot.multiplicativeInverse();
             if (!scale.equalsOne()) {
-                yield this.scaleRow(pivot_row, scale);
+                yield {
+                    result: copy.scaleRow(pivot_row, scale).copy(),
+                    info: new ScaleStepInfo(pivot_row, scale),
+                };
             }
-            for (let row = 0; row < this.m; row++) {
+            for (let row = 0; row < copy.m; row++) {
                 if (row == pivot_row) {
                     continue;
                 }
-                let multiplier = this.get(row, pivot_col).additiveInverse();
-                yield this.replaceRow(row, pivot_row, multiplier);
+                let multiplier = copy.get(row, pivot_col).additiveInverse();
+                yield {
+                    result: copy.replaceRow(row, pivot_row, multiplier).copy(),
+                    info: new ReplaceStepInfo(row, pivot_row, multiplier),
+                };
             }
             pivot_col++;
             pivot_row++;
@@ -86,7 +149,7 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
      * @param row2 Second row to swap.
      * @returns this is returned for method chaining.
      */
-    swapRows(row1: number, row2: number): Matrix<NumberType> {
+    private swapRows(row1: number, row2: number): Matrix<NumberType> {
         for (let col = 0; col < this.n; col++) {
             let tmp = this.get(row1, col);
             this.set(row1, col, this.get(row2, col));
@@ -101,7 +164,7 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
      * @param multilpier Factor to scale by.
      * @returns this is returned for method chaining.
      */
-    scaleRow(row: number, multilpier: NumberType): Matrix<NumberType> {
+    private scaleRow(row: number, multilpier: NumberType): Matrix<NumberType> {
         for (let col = 0; col < this.n; col++) {
             this.set(row, col, this.get(row, col).multiply(multilpier));
         }
@@ -116,7 +179,7 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
      * @param multiplier Factor to multiply the source row by before adding.
      * @returns this is returned for method chaining.
      */
-    replaceRow(
+    private replaceRow(
         destiny_row: number,
         source_row: number,
         multiplier: NumberType
@@ -136,11 +199,15 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
      * @returns The value of the number at row x column.
      * @throws OutOfBondsAccess if row or column are outside of the matrix bounds.
      */
-    get(row: number, column: number): NumberType {
+    public get(row: number, column: number): NumberType {
         if (row >= this.m || column > this.n) {
             throw new OutOfBondsAccess();
         }
-        return this.entries[this.getCollectionIndex(row, column)];
+        return this.entries[row][column];
+    }
+
+    public getEntries(): Array<Array<NumberType>> {
+        return this.entries;
     }
 
     /**
@@ -151,22 +218,18 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
      * @returns The value that the cell was assigned to (for chaining).
      * @throws OutOfBondsAccess if row or column are outside of the matrix bounds.
      */
-    set(row: number, column: number, value: NumberType) {
+    public set(row: number, column: number, value: NumberType) {
         if (row >= this.m || column > this.n) {
             throw new OutOfBondsAccess();
         }
-        return (this.entries[this.getCollectionIndex(row, column)] = value);
-    }
-
-    private getCollectionIndex(row: number, column: number) {
-        return row * this.n + column;
+        return (this.entries[row][column] = value);
     }
 
     /**
      * Produces a string representation of this matrix.
      * @returns String representation of this matrix.
      */
-    toString(): string {
+    public toString(): string {
         let result = "";
         for (let row = 0; row < this.m; row++) {
             for (let col = 0; col < this.n; col++) {
@@ -181,4 +244,5 @@ class Matrix<NumberType extends NumberInterface<NumberType>> {
     }
 }
 
-export { Matrix };
+export { Matrix, OutOfBondsAccess };
+export type { Step, StepInfo };

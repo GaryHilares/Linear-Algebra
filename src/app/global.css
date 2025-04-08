@@ -1,0 +1,23 @@
+html, body {
+    margin: 0;
+    font-family: 'Slabo 13px', 'Times New Roman', Times, serif;
+}
+
+main {
+    width: 66%;
+    padding: 0 1%;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+h1, h2 {
+    font-family: 'Crete Round', 'Times New Roman', Times, serif;
+}
+
+h1 {
+    text-align: center;
+}
+
+pre {
+    font-family: 'Fragment Mono', 'Courier New', Courier, monospace;
+}
